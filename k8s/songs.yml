@@ -3,8 +3,17 @@ kind: Deployment
 metadata:
   name: songs-ms
   namespace: k8s-program
+  annotations:
+    kubernetes.io/change-cause: "v4.0 from Docker Hub"
 spec:
   replicas: 2                      # две копии пода
+  revisionHistoryLimit: 5          # сколько старых ReplicaSet'ов хранить для отката
+  minReadySeconds: 10              # под должен простоять готовым 10 с, прежде чем идти дальше
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1                  # максимум 1 лишний под во время обновления
+      maxUnavailable: 0            # ни одного недоступного: сначала новый, потом удаляем старый
   selector:
     matchLabels:
       app: songs-ms                # какими подами управляет Deployment
@@ -16,7 +25,7 @@ spec:
       enableServiceLinks: false    # чтобы Kubernetes сам не добавил в под переменную
       containers:
         - name: songs-ms
-          image: songs-image:3.0
+          image: gshkvr/songs-service:4.0
           imagePullPolicy: IfNotPresent   # брать локальный образ, не качать из интернета
           ports:
             - containerPort: 8081
