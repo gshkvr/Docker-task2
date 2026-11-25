@@ -21,15 +21,22 @@ spec:
           ports:
             - containerPort: 8081
           volumeMounts:
-            - name: db-data                         # то же имя, что в volumeClaimTemplates
-              mountPath: /var/lib/postgresql/data   # здесь Postgres хранит данные
-          env:
-            - name: SONGS_DB_URL
-              value: songs-db      # имя Service базы = её адрес в кластере
-            - name: SONGS_DB_PORT
-              value: "5432"
-            - name: SONGS_MS_PORT
-              value: "8081"
+            - name: songs-storage                         # то же имя, что в volumes ниже
+              mountPath: /data                            # папка приложения на постоянном томе (PV/PVC)
+          envFrom:                       # все ключи ConfigMap становятся переменными
+            - configMapRef:
+                name: songs-config
+          env:                           # логин и пароль точечно из Secret
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: password
       volumes:
         - name: songs-storage
           persistentVolumeClaim:

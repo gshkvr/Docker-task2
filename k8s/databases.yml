@@ -18,8 +18,16 @@ spec:
         - name: postgres
           image: postgres:16
           env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:            # взять одно значение из Secret
+                  name: db-credentials   # имя Secret
+                  key: username          # ключ внутри него
             - name: POSTGRES_PASSWORD
-              value: postgres
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: password
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           ports:
@@ -27,6 +35,13 @@ spec:
           volumeMounts:
             - name: db-data
               mountPath: /var/lib/postgresql/data
+            - name: init-sql                          # SQL из ConfigMap: Postgres выполнит его при первом запуске
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+      volumes:                                        # обычные тома пода (не PVC)
+        - name: init-sql
+          configMap:
+            name: songs-db-init
   volumeClaimTemplates:
     - metadata:
         name: db-data                 # имя шаблона; PVC будет называться db-data-songs-db-0
@@ -71,8 +86,16 @@ spec:
         - name: postgres
           image: postgres:16
           env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:            # взять одно значение из Secret
+                  name: db-credentials   # имя Secret
+                  key: username          # ключ внутри него
             - name: POSTGRES_PASSWORD
-              value: postgres
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: password
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           ports:
@@ -80,6 +103,13 @@ spec:
           volumeMounts:
             - name: db-data
               mountPath: /var/lib/postgresql/data
+            - name: init-sql                          # SQL из ConfigMap: Postgres выполнит его при первом запуске
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+      volumes:                                        # обычные тома пода (не PVC)
+        - name: init-sql
+          configMap:
+            name: resources-db-init
   volumeClaimTemplates:
     - metadata:
         name: db-data                 # имя шаблона; PVC будет называться db-data-resources-db-0

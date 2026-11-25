@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: songs-db-init
+  namespace: k8s-program
+data:
+  init.sql: |                 # «|» означает многострочный текст как есть
+    CREATE SEQUENCE IF NOT EXISTS songs_seq START WITH 1 INCREMENT BY 50;
+    CREATE TABLE IF NOT EXISTS songs
+    (
+        id          INTEGER PRIMARY KEY,
+        resource_id INTEGER NOT NULL UNIQUE,
+        album       VARCHAR(255),
+        artist      VARCHAR(255),
+        length      VARCHAR(255),
+        name        VARCHAR(255),
+        year        VARCHAR(255)
+    );
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resources-db-init
+  namespace: k8s-program
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS resources
+    (
+        id   SERIAL PRIMARY KEY,
+        blob BYTEA
+    );
