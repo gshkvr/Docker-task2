@@ -32,6 +32,23 @@ spec:
               value: /var/lib/postgresql/data/pgdata
           ports:
             - containerPort: 5432
+          startupProbe:                    # ждём первый запуск и выполнение init.sql
+            exec:
+              command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -h 127.0.0.1"]
+            periodSeconds: 2
+            failureThreshold: 30           # до 60 секунд на старт
+          livenessProbe:                   # сервер Postgres жив?
+            exec:
+              command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -h 127.0.0.1"]
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6            # базу не рестартуем сгоряча
+          readinessProbe:                  # принимает подключения?
+            exec:
+              command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -h 127.0.0.1"]
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           volumeMounts:
             - name: db-data
               mountPath: /var/lib/postgresql/data
@@ -100,6 +117,23 @@ spec:
               value: /var/lib/postgresql/data/pgdata
           ports:
             - containerPort: 5432
+          startupProbe:                    # ждём первый запуск и выполнение init.sql
+            exec:
+              command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -h 127.0.0.1"]
+            periodSeconds: 2
+            failureThreshold: 30           # до 60 секунд на старт
+          livenessProbe:                   # сервер Postgres жив?
+            exec:
+              command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -h 127.0.0.1"]
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6            # базу не рестартуем сгоряча
+          readinessProbe:                  # принимает подключения?
+            exec:
+              command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -h 127.0.0.1"]
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           volumeMounts:
             - name: db-data
               mountPath: /var/lib/postgresql/data

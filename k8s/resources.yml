@@ -16,7 +16,7 @@ spec:
       enableServiceLinks: false    # чтобы Kubernetes сам не добавил в под переменную
       containers:
         - name: resources-ms
-          image: resources-image:2.0
+          image: resources-image:3.0
           imagePullPolicy: IfNotPresent   # брать локальный образ, не качать из интернета
           ports:
             - containerPort: 8080
@@ -34,6 +34,24 @@ spec:
                 secretKeyRef:
                   name: db-credentials
                   key: password
+          startupProbe:                    # ждём, пока Spring поднимется
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 3
+            failureThreshold: 30           # до 90 секунд на старт
+          livenessProbe:                   # приложение не зависло?
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 3            # 30 секунд без ответа — рестарт
+          readinessProbe:                  # готово принимать трафик (и база доступна)?
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service
